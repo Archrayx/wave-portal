@@ -35,18 +35,18 @@ contract Wave {
     }
 
     function wave(string memory _message) public {
+        require(
+            lastWavedAt[msg.sender] + 30 seconds < block.timestamp,
+            "wait 30s"
+        );
+        lastWavedAt[msg.sender] = block.timestamp;
+
         totalWaves += 1;
         console.log("%s waved w/ message %s", msg.sender, _message);
 
         /*
          * Update the current timestamp we have for the user
          */
-        lastWavedAt[msg.sender] = block.timestamp;
-
-        require(
-            lastWavedAt[msg.sender] + .5 minutes < block.timestamp,
-            "wait 30s"
-        );
 
         /*
          * This is where I actually store the wave data in the array.
@@ -56,16 +56,19 @@ contract Wave {
         /*
          * Generate a new seed for the next user that sends a wave
          */
-        seed = (block.difficulty + block.timestamp + seed) % 100;
+        uint256 randomNumber = (block.difficulty + block.timestamp + seed) %
+            100;
 
-        console.log("Random # generated: %d", seed);
+        console.log("Random # generated: %s", randomNumber);
+
+        seed = randomNumber;
 
         /*
          * I added some fanciness here, Google it and try to figure out what it is!
          * Let me know what you learn in #general-chill-chat
          */
 
-        if (seed <= 50) {
+        if (randomNumber < 50) {
             console.log("%s won!", msg.sender);
             uint256 prizeAmount = .0001 ether;
 
@@ -91,7 +94,6 @@ contract Wave {
     }
 
     function getTotalWaves() public view returns (uint256) {
-        console.log("Total Waves: %d", totalWaves);
         return totalWaves;
     }
 }
